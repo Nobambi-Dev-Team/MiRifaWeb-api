@@ -1,12 +1,21 @@
 package com.nobambidevteam.MiRifaWeb.security.service;
 
+import com.nobambidevteam.MiRifaWeb.modules.user.dto.auth.AuthLoginRequestDto;
+import com.nobambidevteam.MiRifaWeb.modules.user.dto.auth.AuthLoginResponseDto;
 import com.nobambidevteam.MiRifaWeb.modules.user.entities.User;
 import com.nobambidevteam.MiRifaWeb.modules.user.repository.IUserRepository;
+import com.nobambidevteam.MiRifaWeb.utils.JwtUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +26,8 @@ import java.util.List;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final IUserRepository userRepository;
+    private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -46,5 +57,34 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 authorityList // la lista con los roles en formato SimpleGrantedAuthority
         );
 
+    }
+
+    public AuthLoginResponseDto loginUser(AuthLoginRequestDto request) {
+
+        // Recuperar nombre de usuario y contraseña
+        String username = request.username();
+        String password = request.password();
+
+        Authentication authentication = this.authenticate(username, password);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String accessToken = jwtUtils.createToken(authentication);
+
+        return new AuthLoginResponseDto(username, "Login successfull", accessToken, true);
+    }
+
+    private Authentication authenticate(String username, String password) {
+
+        UserDetails userDetails = this.loadUserByUsername(username);
+
+        if(userDetails == null){
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        if(!passwordEncoder.matches(password, userDetails.getPassword())){
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(), userDetails.getAuthorities());
     }
 }
