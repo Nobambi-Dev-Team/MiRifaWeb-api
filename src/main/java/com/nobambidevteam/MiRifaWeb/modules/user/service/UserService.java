@@ -1,6 +1,8 @@
 package com.nobambidevteam.MiRifaWeb.modules.user.service;
 
 
+import com.nobambidevteam.MiRifaWeb.exception.BusinessRuleException;
+import com.nobambidevteam.MiRifaWeb.exception.ResourceNotFoundException;
 import com.nobambidevteam.MiRifaWeb.modules.user.dto.role.RoleDto;
 import com.nobambidevteam.MiRifaWeb.modules.user.dto.user.UserCreateDto;
 import com.nobambidevteam.MiRifaWeb.modules.user.dto.user.UserDto;
@@ -89,14 +91,14 @@ public class UserService implements IUserService {
 
         String roleName = "ORGANIZER";
         return roleService.findByRole(roleName)
-                .orElseThrow(() -> new EntityNotFoundException("No existe el rol " + roleName));
+                .orElseThrow(() -> new ResourceNotFoundException("No existe el rol " + roleName));
     }
 
     private void validateUniqueEmail(String email) {
 
         boolean existsUser = userRepository.findByEmail(email).isPresent();
         if (existsUser) {
-            throw new IllegalArgumentException("Ya existe un usuario con el email " + email + " asociado.");
+            throw new BusinessRuleException("Ya existe un usuario con el email " + email + " asociado.");
         }
     }
 
