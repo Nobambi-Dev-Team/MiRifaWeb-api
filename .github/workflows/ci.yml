@@ -22,5 +22,5 @@ jobs:
 
 
       - name: Compilar y ejecutar tests
-        run: mvn -B -DskipTests=false clean verify
+        run: mvn -B clean verify -Dspring.profiles.active=test
 
