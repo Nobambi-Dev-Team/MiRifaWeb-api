@@ -77,10 +77,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         UserDetails userDetails = this.loadUserByUsername(username);
 
-        if(userDetails == null){
-            throw new BadCredentialsException("Invalid username or password");
-        }
-
         if(!passwordEncoder.matches(password, userDetails.getPassword())){
             throw new BadCredentialsException("Invalid username or password");
         }
