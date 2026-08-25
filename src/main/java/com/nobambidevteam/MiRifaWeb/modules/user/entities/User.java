@@ -37,6 +37,7 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.EAGER) //Eager carga todos los roles
     @JoinTable(

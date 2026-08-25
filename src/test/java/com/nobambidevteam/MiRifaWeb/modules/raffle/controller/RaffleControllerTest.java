@@ -4,7 +4,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.prize.PrizeRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleResponseDto;
-import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.Category;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.RaffleCategory;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.service.RaffleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class RaffleControllerTest {
                 new BigDecimal("1500.50"),
                 "mi.alias.mp",
                 LocalDateTime.now().plusMonths(1),
-                Category.VIAJES,
+                RaffleCategory.TRAVEL,
                 "url",
                 List.of(prize)
         );

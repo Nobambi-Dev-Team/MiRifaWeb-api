@@ -1,5 +1,6 @@
 package com.nobambidevteam.MiRifaWeb.modules.raffle.model.entities;
 
+import com.nobambidevteam.MiRifaWeb.modules.reservation.model.entities.Reservation;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,4 +27,8 @@ public class Prize {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "raffle_id", nullable = false)
     private Raffle raffle;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "winning_reservation_id")
+    private Reservation winningReservation;
 }
