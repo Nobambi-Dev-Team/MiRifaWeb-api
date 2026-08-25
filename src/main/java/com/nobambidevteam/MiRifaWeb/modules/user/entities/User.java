@@ -37,22 +37,7 @@ public class User {
 
     private LocalDateTime createdAt;
 
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean enabled = true;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean accountNotExpired = true;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean accountNotLocked = true;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean credentialNotExpired = true;
-
+    private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.EAGER) //Eager carga todos los roles
     @JoinTable(

@@ -50,10 +50,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                user.isEnabled(),
-                user.isAccountNotExpired(),
-                user.isCredentialNotExpired(),
-                user.isAccountNotLocked(),
+                true,
+                true,
+                true,
+                true,
                 authorityList // la lista con los roles en formato SimpleGrantedAuthority
         );
 

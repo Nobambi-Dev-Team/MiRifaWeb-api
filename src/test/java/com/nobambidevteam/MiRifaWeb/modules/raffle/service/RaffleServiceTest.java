@@ -4,7 +4,7 @@ import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.prize.PrizeRequestD
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleResponseDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.entities.Raffle;
-import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.Category;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.RaffleCategory;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.repository.RaffleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ public class RaffleServiceTest {
                 new BigDecimal("1500.50"),
                 "mi.alias.mp",
                 LocalDateTime.now().plusMonths(1),
-                Category.VIAJES,
+                RaffleCategory.TRAVEL,
                 "url_imagen",
                 List.of(prize)
         );

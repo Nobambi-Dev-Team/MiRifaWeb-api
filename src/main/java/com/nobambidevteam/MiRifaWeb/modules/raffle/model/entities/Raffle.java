@@ -1,8 +1,8 @@
 package com.nobambidevteam.MiRifaWeb.modules.raffle.model.entities;
 
-import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.Category;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.RaffleCategory;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.RaffleStatus;
 import jakarta.persistence.*;
-import jdk.jfr.Name;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -16,9 +16,10 @@ import java.util.List;
 @Getter @Setter
 @Builder
 public class Raffle {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Name("raffle_id")
+    @Column(name = "raffle_id")
     private Long raffleId;
 
     @Column(name = "user_id", nullable = false)
@@ -47,7 +48,11 @@ public class Raffle {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private Category category;
+    private RaffleCategory category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private RaffleStatus status;
 
     @Column(name = "image_url", length = 255)
     private String imageUrl;

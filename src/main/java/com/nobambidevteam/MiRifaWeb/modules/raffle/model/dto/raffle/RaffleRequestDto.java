@@ -2,7 +2,7 @@ package com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.prize.PrizeRequestDto;
-import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.Category;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.RaffleCategory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -44,7 +44,7 @@ public class RaffleRequestDto {
     private LocalDateTime endDate;
 
     @NotNull(message = "La categoría es obligatoria")
-    private Category category;
+    private RaffleCategory category;
 
     @JsonProperty("imagen_url")
     private String imageUrl;

@@ -2,7 +2,7 @@ package com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.prize.PrizeResponseDto;
-import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.Category;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.enums.RaffleCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,7 +37,7 @@ public class RaffleResponseDto {
     @JsonProperty("end_date")
     private LocalDateTime endDate;
 
-    private Category category;
+    private RaffleCategory category;
 
     @JsonProperty("image_url")
     private String imageUrl;
