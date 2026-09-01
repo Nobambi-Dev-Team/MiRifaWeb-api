@@ -26,6 +26,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.OccupiedNumberDto;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumbersStatusResponseDto;
+import com.nobambidevteam.MiRifaWeb.modules.reservation.model.enums.ReservationStatus;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @WebMvcTest(RaffleController.class)
@@ -94,5 +99,37 @@ class RaffleControllerTest {
                         .content(objectMapper.writeValueAsString(validRequestDTO)))
                 // Spring Boot Validation debe interceptar la falla y devolver 400 Bad Request
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn200AndNumbersStatusWhenRaffleExists() throws Exception {
+        // Arrange
+        Long raffleId = 1L;
+
+        List<OccupiedNumberDto> mockOccupiedNumbers = List.of(
+                new OccupiedNumberDto(7, ReservationStatus.RESERVED),
+                new OccupiedNumberDto(10, ReservationStatus.RESERVED)
+        );
+
+        RaffleNumbersStatusResponseDto mockResponse = RaffleNumbersStatusResponseDto.builder()
+                .totalCapacity(100)
+                .occupiedNumbers(mockOccupiedNumbers)
+                .build();
+
+        // Le decimos a Mockito qué devolver cuando se llame a la función
+        when(raffleService.getNumbersStatus(raffleId)).thenReturn(mockResponse);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/raffles/{raffle_id}/numbers-status", raffleId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // Validamos la estructura JSON resultante usando JsonPath
+                .andExpect(jsonPath("$.total_capacity").value(100))
+                .andExpect(jsonPath("$.occupied_numbers").isArray())
+                .andExpect(jsonPath("$.occupied_numbers.length()").value(2))
+                .andExpect(jsonPath("$.occupied_numbers[0].number").value(7))
+                .andExpect(jsonPath("$.occupied_numbers[0].status").value("RESERVED"))
+                .andExpect(jsonPath("$.occupied_numbers[1].number").value(10))
+                .andExpect(jsonPath("$.occupied_numbers[1].status").value("RESERVED"));
     }
 }

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumbersStatusResponseDto;
 
 @RestController
 @RequestMapping("/api/raffles")
@@ -60,5 +63,14 @@ public class RaffleController {
         }
 
         throw new IllegalStateException("No se pudo extraer el user_id del contexto de seguridad.");
+    }
+
+    @GetMapping("/{raffle_id}/numbers-status")
+    public ResponseEntity<RaffleNumbersStatusResponseDto> getNumbersStatus(
+            @PathVariable("raffle_id") Long raffleId) {
+
+        RaffleNumbersStatusResponseDto response = raffleService.getNumbersStatus(raffleId);
+
+        return ResponseEntity.ok(response); // Retorna 200 OK por defecto
     }
 }

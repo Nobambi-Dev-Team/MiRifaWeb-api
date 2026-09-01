@@ -22,11 +22,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.nobambidevteam.MiRifaWeb.exception.ResourceNotFoundException;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.OccupiedNumberDto;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumbersStatusResponseDto;
+import com.nobambidevteam.MiRifaWeb.modules.reservation.model.enums.ReservationStatus;
+import com.nobambidevteam.MiRifaWeb.modules.reservation.repository.ReservationRepository;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @ExtendWith(MockitoExtension.class)
 public class RaffleServiceTest {
 
     @Mock
     private RaffleRepository raffleRepository;
+
+    @Mock
+    private ReservationRepository reservationRepository;
 
     @InjectMocks
     private RaffleService raffleService;
@@ -73,5 +84,58 @@ public class RaffleServiceTest {
         assertNotNull(response.getStartDate());
 
         verify(raffleRepository, times(1)).save(any(Raffle.class));
+    }
+
+    @Test
+    void shouldReturnNumbersStatusSuccessfully() {
+        // Arrange
+        Long raffleId = 1L;
+
+        // Simulamos la rifa que se encuentra en la base de datos
+        Raffle mockRaffle = new Raffle();
+        mockRaffle.setRaffleId(raffleId);
+        mockRaffle.setNumberCount(100); // total_capacity
+
+        // Simulamos la lista de números ocupados
+        List<OccupiedNumberDto> mockOccupiedNumbers = List.of(
+                new OccupiedNumberDto(7, ReservationStatus.RESERVED),
+                new OccupiedNumberDto(10, ReservationStatus.RESERVED)
+        );
+
+        // Configuramos los mocks
+        when(raffleRepository.findById(raffleId)).thenReturn(Optional.of(mockRaffle));
+        when(reservationRepository.findOccupiedNumbersByRaffleId(raffleId)).thenReturn(mockOccupiedNumbers);
+
+        // Act
+        RaffleNumbersStatusResponseDto response = raffleService.getNumbersStatus(raffleId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(100, response.getTotalCapacity());
+        assertEquals(2, response.getOccupiedNumbers().size());
+        assertEquals(7, response.getOccupiedNumbers().get(0).getNumber());
+        assertEquals(ReservationStatus.RESERVED, response.getOccupiedNumbers().get(0).getStatus());
+
+        // Verificamos que los repositorios fueron llamados exactamente una vez
+        verify(raffleRepository, times(1)).findById(raffleId);
+        verify(reservationRepository, times(1)).findOccupiedNumbersByRaffleId(raffleId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRaffleNotFoundOnNumbersStatus() {
+        // Arrange
+        Long invalidRaffleId = 99L;
+
+        // Simulamos que el repositorio no encuentra nada
+        when(raffleRepository.findById(invalidRaffleId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            raffleService.getNumbersStatus(invalidRaffleId);
+        });
+
+        // Verificamos que si falla la búsqueda de la rifa, NO se hace la consulta de reservas (optimización)
+        verify(raffleRepository, times(1)).findById(invalidRaffleId);
+        verify(reservationRepository, never()).findOccupiedNumbersByRaffleId(anyLong());
     }
 }
