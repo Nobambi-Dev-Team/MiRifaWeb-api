@@ -41,12 +41,19 @@ public class JwtTokenValidator extends OncePerRequestFilter {
             String username = jwtUtils.extractUsername(decodedJWT);
             String authorities = jwtUtils.getSpecificClaim(decodedJWT, "authorities").asString();
 
+            // Extraemos el ID del usuario desde los claims del token
+            // Asumiendo que el método getSpecificClaim devuelve un objeto Claim de Auth0
+            Long userId = jwtUtils.getSpecificClaim(decodedJWT, "user_id").asLong();
+
             Collection<? extends GrantedAuthority> authoritiesList =
                     AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
+            // Guardamos el ID extraído en los "details" de la autenticación
+            authentication.setDetails(userId);
 
             SecurityContext securityContext = SecurityContextHolder.getContext();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
 

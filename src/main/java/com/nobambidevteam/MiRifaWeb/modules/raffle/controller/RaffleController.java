@@ -42,27 +42,17 @@ public class RaffleController {
      */
     private Long extractUserIdFromAuthentication(Authentication authentication) {
 
-        // OPCIÓN A: Si en tu filtro JWT guardas tu propia clase UserDetails
-        // (Recomendado, asumiendo que tienes una clase Usuario o CustomUserDetails)
-        /*
-        if (authentication.getPrincipal() instanceof TuClaseUserDetails userDetails) {
-            return userDetails.getId(); // Asegurate de que tu clase tenga el método getId()
-        }
-        */
-
-        // OPCIÓN B: Si en tu filtro JWT guardas el ID o el username directamente como un String
-        if (authentication.getPrincipal() instanceof String) {
-            try {
-                // Si guardaste el ID del usuario como un String en el principal
-                return Long.parseLong((String) authentication.getPrincipal());
-            } catch (NumberFormatException e) {
-                // Si guardaste el username/email, tendrías que buscar el usuario en la BD primero
-                // (Para esto necesitarías inyectar el UserRepository en el Controller o Service)
-                throw new IllegalStateException("El principal no es un ID numérico válido");
-            }
+        // Extraemos el ID directamente de los detalles que seteó nuestro JwtTokenValidator
+        if (authentication.getDetails() instanceof Long userId) {
+            return userId;
         }
 
-        throw new IllegalStateException("No se pudo extraer el user_id del contexto de seguridad.");
+        // Fallback por si hay un problema en la configuración del filtro
+        if (authentication.getDetails() instanceof Integer userIdInt) {
+            return userIdInt.longValue();
+        }
+
+        throw new IllegalStateException("No se pudo extraer el user_id de los claims del token en sesión.");
     }
 
     @GetMapping("/{raffle_id}/reservations")
