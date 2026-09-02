@@ -27,7 +27,7 @@ public class JwtUtils {
     private String userGenerator;
 
     // Creación de Tokens
-    public String createToken(Authentication authentication) {
+    public String createToken(Authentication authentication, Long userId) {
 
         Algorithm algorithm = Algorithm.HMAC256(privateKey);
 
@@ -41,6 +41,7 @@ public class JwtUtils {
         return JWT.create()
                 .withIssuer(this.userGenerator) // userGenerator = encargado de generar el Token
                 .withSubject(username) // El usuario que se autenticó y va a estar en los datos encriptados
+                .withClaim("userId", userId)
                 .withClaim("authorities", authorities)
                 .withIssuedAt(new Date())
                 .withExpiresAt(
