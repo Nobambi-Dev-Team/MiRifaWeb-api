@@ -52,7 +52,8 @@ public class Raffle {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private RaffleStatus status;
+    @Builder.Default
+    private RaffleStatus status = RaffleStatus.STARTED;
 
     @Column(name = "image_url", length = 255)
     private String imageUrl;
