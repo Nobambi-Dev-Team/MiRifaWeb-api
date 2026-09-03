@@ -1,5 +1,6 @@
 package com.nobambidevteam.MiRifaWeb.modules.raffle.controller;
 
+import com.nobambidevteam.MiRifaWeb.security.principal.CustomUserPrincipal;
 import tools.jackson.databind.ObjectMapper;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.prize.PrizeRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleRequestDto;
@@ -64,9 +65,11 @@ class RaffleControllerTest {
                 List.of(prize)
         );
 
-        // Simulamos la Opción A o B que hablamos anteriormente (un usuario con ID 1)
-        // Spring MVC pasará este principal al parámetro Authentication del controller
-        mockPrincipal = new UsernamePasswordAuthenticationToken("1", null, List.of());
+        // Creamos la instancia de nuestro principal personalizado con el ID esperado por Mockito (1L)
+        CustomUserPrincipal customPrincipal = new CustomUserPrincipal(1L, "usuario@test.com");
+
+        // Pasamos el customPrincipal como primer argumento
+        mockPrincipal = new UsernamePasswordAuthenticationToken(customPrincipal, null, List.of());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.nobambidevteam.MiRifaWeb.security.filter;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.nobambidevteam.MiRifaWeb.security.principal.CustomUserPrincipal;
 import com.nobambidevteam.MiRifaWeb.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,6 +40,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
             DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
 
             String username = jwtUtils.extractUsername(decodedJWT);
+            Long userId = jwtUtils.getSpecificClaim(decodedJWT, "userId").asLong();
             String authorities = jwtUtils.getSpecificClaim(decodedJWT, "authorities").asString();
 
             Collection<? extends GrantedAuthority> authoritiesList =
@@ -46,7 +48,10 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
 
             SecurityContext securityContext = SecurityContextHolder.getContext();
-            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
+
+            CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, authoritiesList);
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
 
