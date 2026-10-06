@@ -37,8 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.OccupiedNumberDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumbersStatusResponseDto;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.model.enums.ReservationStatus;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @WebMvcTest(RaffleController.class)
@@ -53,12 +51,12 @@ class RaffleControllerTest {
 
     @MockitoBean
     private RaffleService raffleService;
+    
     @MockitoBean
     private ReservationService reservationService;
 
     private RaffleRequestDto validRequestDTO;
     private UsernamePasswordAuthenticationToken mockPrincipal;
-    private final Long MOCK_USER_ID = 100L;
 
     @BeforeEach
     void setUp() {
@@ -137,8 +135,8 @@ class RaffleControllerTest {
                 1 // Total de elementos
         );
 
-        // Cuando el controlador llame al servicio con el ID de la rifa y el ID del usuario extraído del token
-        when(reservationService.getReservationsByRaffle(eq(raffleId), eq(MOCK_USER_ID), any(Pageable.class)))
+        // Cuando el controlador llame al servicio con el ID de la rifa y el ID del usuario extraído del token (1L)
+        when(reservationService.getReservationsByRaffle(eq(raffleId), eq(1L), any(Pageable.class)))
                 .thenReturn(mockPage);
 
         // Act & Assert
@@ -153,7 +151,8 @@ class RaffleControllerTest {
                 .andExpect(jsonPath("$.content[0].reservation_id").value(10))
                 .andExpect(jsonPath("$.content[0].buyer_name").value("Luciano"))
                 .andExpect(jsonPath("$.content[0].buyer_surname").value("Zanni"));
-    
+    }
+
     @Test
     void shouldReturn200AndNumbersStatusWhenRaffleExists() throws Exception {
         // Arrange
