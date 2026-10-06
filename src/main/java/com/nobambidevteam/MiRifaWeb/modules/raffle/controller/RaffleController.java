@@ -6,6 +6,7 @@ import com.nobambidevteam.MiRifaWeb.modules.raffle.service.RaffleService;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.service.interfaces.IRaffleService;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.model.dto.ReservationResponseDto;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.service.interfaces.IReservationService;
+import com.nobambidevteam.MiRifaWeb.security.principal.CustomUserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumbersStatusResponseDto;
 
 @RestController
 @RequestMapping("/api/raffles")
@@ -41,15 +45,8 @@ public class RaffleController {
      * Método utilitario para extraer el user_id de la sesión autenticada.
      */
     private Long extractUserIdFromAuthentication(Authentication authentication) {
-
-        // Extraemos el ID directamente de los detalles que seteó nuestro JwtTokenValidator
-        if (authentication.getDetails() instanceof Long userId) {
-            return userId;
-        }
-
-        // Fallback por si hay un problema en la configuración del filtro
-        if (authentication.getDetails() instanceof Integer userIdInt) {
-            return userIdInt.longValue();
+        if (authentication.getPrincipal() instanceof CustomUserPrincipal customPrincipal) {
+            return customPrincipal.id();
         }
 
         throw new IllegalStateException("No se pudo extraer el user_id de los claims del token en sesión.");
@@ -67,5 +64,14 @@ public class RaffleController {
         Page<ReservationResponseDto> reservations = reservationService.getReservationsByRaffle(raffleId, userId, pageable);
 
         return ResponseEntity.ok(reservations);
+    }
+
+    @GetMapping("/{raffle_id}/numbers-status")
+    public ResponseEntity<RaffleNumbersStatusResponseDto> getNumbersStatus(
+            @PathVariable("raffle_id") Long raffleId) {
+
+        RaffleNumbersStatusResponseDto response = raffleService.getNumbersStatus(raffleId);
+
+        return ResponseEntity.ok(response); // Retorna 200 OK por defecto
     }
 }

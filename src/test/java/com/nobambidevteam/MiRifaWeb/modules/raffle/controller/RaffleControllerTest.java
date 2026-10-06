@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.nobambidevteam.MiRifaWeb.security.principal.CustomUserPrincipal;
 import tools.jackson.databind.ObjectMapper;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.prize.PrizeRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleRequestDto;
@@ -32,6 +33,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.OccupiedNumberDto;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumbersStatusResponseDto;
+import com.nobambidevteam.MiRifaWeb.modules.reservation.model.enums.ReservationStatus;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -69,8 +75,11 @@ class RaffleControllerTest {
                 List.of(prize)
         );
 
-        mockPrincipal = new UsernamePasswordAuthenticationToken("usuario@email.com", null, List.of());
-        mockPrincipal.setDetails(MOCK_USER_ID);
+        // Creamos la instancia de nuestro principal personalizado con el ID esperado por Mockito (1L)
+        CustomUserPrincipal customPrincipal = new CustomUserPrincipal(1L, "usuario@test.com");
+
+        // Pasamos el customPrincipal como primer argumento
+        mockPrincipal = new UsernamePasswordAuthenticationToken(customPrincipal, null, List.of());
     }
 
     @Test
@@ -144,5 +153,36 @@ class RaffleControllerTest {
                 .andExpect(jsonPath("$.content[0].reservation_id").value(10))
                 .andExpect(jsonPath("$.content[0].buyer_name").value("Luciano"))
                 .andExpect(jsonPath("$.content[0].buyer_surname").value("Zanni"));
+    
+    @Test
+    void shouldReturn200AndNumbersStatusWhenRaffleExists() throws Exception {
+        // Arrange
+        Long raffleId = 1L;
+
+        List<OccupiedNumberDto> mockOccupiedNumbers = List.of(
+                new OccupiedNumberDto(7, ReservationStatus.RESERVED),
+                new OccupiedNumberDto(10, ReservationStatus.RESERVED)
+        );
+
+        RaffleNumbersStatusResponseDto mockResponse = RaffleNumbersStatusResponseDto.builder()
+                .totalCapacity(100)
+                .occupiedNumbers(mockOccupiedNumbers)
+                .build();
+
+        // Le decimos a Mockito qué devolver cuando se llame a la función
+        when(raffleService.getNumbersStatus(raffleId)).thenReturn(mockResponse);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/raffles/{raffle_id}/numbers-status", raffleId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // Validamos la estructura JSON resultante usando JsonPath
+                .andExpect(jsonPath("$.total_capacity").value(100))
+                .andExpect(jsonPath("$.occupied_numbers").isArray())
+                .andExpect(jsonPath("$.occupied_numbers.length()").value(2))
+                .andExpect(jsonPath("$.occupied_numbers[0].number").value(7))
+                .andExpect(jsonPath("$.occupied_numbers[0].status").value("RESERVED"))
+                .andExpect(jsonPath("$.occupied_numbers[1].number").value(10))
+                .andExpect(jsonPath("$.occupied_numbers[1].status").value("RESERVED"));
     }
 }
