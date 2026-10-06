@@ -46,7 +46,6 @@ public class JwtTokenValidator extends OncePerRequestFilter {
             Collection<? extends GrantedAuthority> authoritiesList =
                     AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
-
             SecurityContext securityContext = SecurityContextHolder.getContext();
 
             CustomUserPrincipal principal = new CustomUserPrincipal(userId, username);

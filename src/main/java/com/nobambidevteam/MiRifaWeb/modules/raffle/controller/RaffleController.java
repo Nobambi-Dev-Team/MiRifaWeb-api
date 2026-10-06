@@ -4,15 +4,17 @@ import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleReques
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleResponseDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.service.RaffleService;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.service.interfaces.IRaffleService;
+import com.nobambidevteam.MiRifaWeb.modules.reservation.model.dto.ReservationResponseDto;
+import com.nobambidevteam.MiRifaWeb.modules.reservation.service.interfaces.IReservationService;
 import com.nobambidevteam.MiRifaWeb.security.principal.CustomUserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +26,7 @@ import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleNumber
 public class RaffleController {
 
     private final IRaffleService raffleService;
+    private final IReservationService reservationService;
 
     @PostMapping
     public ResponseEntity<RaffleResponseDto> createRaffle(
@@ -46,7 +49,21 @@ public class RaffleController {
             return customPrincipal.id();
         }
 
-        throw new IllegalStateException("No se pudo extraer el user_id del contexto de seguridad.");
+        throw new IllegalStateException("No se pudo extraer el user_id de los claims del token en sesión.");
+    }
+
+    @GetMapping("/{raffle_id}/reservations")
+    public ResponseEntity<Page<ReservationResponseDto>> getRaffleReservations(
+            @PathVariable("raffle_id") Long raffleId,
+            @PageableDefault(size = 20) Pageable pageable,
+            Authentication authentication) {
+
+        // Extraemos el ID del usuario del token (el organizador)
+        Long userId = extractUserIdFromAuthentication(authentication);
+
+        Page<ReservationResponseDto> reservations = reservationService.getReservationsByRaffle(raffleId, userId, pageable);
+
+        return ResponseEntity.ok(reservations);
     }
 
     @GetMapping("/{raffle_id}/numbers-status")
