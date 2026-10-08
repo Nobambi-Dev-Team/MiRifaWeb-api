@@ -20,4 +20,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT new com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.OccupiedNumberDto(r.number, r.status) " +
             "FROM Reservation r WHERE r.raffle.raffleId = :raffleId")
     List<OccupiedNumberDto> findOccupiedNumbersByRaffleId(@Param("raffleId") Long raffleId);
+
+    boolean existsByRaffle_RaffleIdAndNumber(Long raffleId, Integer number);
 }

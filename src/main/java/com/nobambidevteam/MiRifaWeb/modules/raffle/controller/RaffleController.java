@@ -74,4 +74,5 @@ public class RaffleController {
 
         return ResponseEntity.ok(response); // Retorna 200 OK por defecto
     }
+
 }
