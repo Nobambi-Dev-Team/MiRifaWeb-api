@@ -15,6 +15,9 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     @Query("SELECT r FROM Reservation r WHERE r.raffle.raffleId = :raffleId")
+    List<Reservation> findAllByRaffleId(Long raffleId);
+
+    @Query("SELECT r FROM Reservation r WHERE r.raffle.raffleId = :raffleId")
     Page<Reservation> findByRaffleId(Long raffleId, Pageable pageable);
 
     @Query("SELECT new com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.OccupiedNumberDto(r.number, r.status) " +

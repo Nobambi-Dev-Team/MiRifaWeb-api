@@ -1,8 +1,8 @@
 package com.nobambidevteam.MiRifaWeb.modules.raffle.controller;
 
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleMetricsDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleResponseDto;
-import com.nobambidevteam.MiRifaWeb.modules.raffle.service.RaffleService;
 import com.nobambidevteam.MiRifaWeb.modules.raffle.service.interfaces.IRaffleService;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.model.dto.ReservationResponseDto;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.service.interfaces.IReservationService;
@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -74,4 +75,16 @@ public class RaffleController {
 
         return ResponseEntity.ok(response); // Retorna 200 OK por defecto
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ORGANIZER')")
+    @ResponseStatus(HttpStatus.OK)
+    public RaffleMetricsDto getRaffleMetricsById(@PathVariable("id") Long raffleId, Authentication authentication){
+
+        // Extraemos el user_id del token JWT en la sesión actual
+        Long userId = extractUserIdFromAuthentication(authentication);
+
+        return raffleService.getRaffleMetricsById(raffleId, userId);
+    }
+
 }
