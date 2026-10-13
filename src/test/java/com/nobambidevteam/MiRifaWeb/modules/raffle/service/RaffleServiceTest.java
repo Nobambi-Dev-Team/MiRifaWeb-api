@@ -138,4 +138,48 @@ public class RaffleServiceTest {
         verify(raffleRepository, times(1)).findById(invalidRaffleId);
         verify(reservationRepository, never()).findOccupiedNumbersByRaffleId(anyLong());
     }
+
+    @Test
+    void shouldReturnPublicRaffleDetailsSuccessfully() {
+        // Arrange
+        Long raffleId = 1L;
+
+        Raffle mockRaffle = new Raffle();
+        mockRaffle.setRaffleId(raffleId);
+        mockRaffle.setTitle("Sorteo de fin de año");
+        mockRaffle.setDescription("Recaudación para el viaje de estudios");
+        mockRaffle.setNumberCount(100);
+        mockRaffle.setUnitPrice(new BigDecimal("1500.50"));
+        mockRaffle.setCategory(RaffleCategory.TRAVEL);
+
+        when(raffleRepository.findById(raffleId)).thenReturn(Optional.of(mockRaffle));
+
+        // Act
+        RaffleResponseDto response = raffleService.getPublicRaffleDetails(raffleId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(raffleId, response.getId());
+        assertEquals("Sorteo de fin de año", response.getTitle());
+        assertEquals(100, response.getNumberCount());
+
+        verify(raffleRepository, times(1)).findById(raffleId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRaffleNotFoundOnPublicDetails() {
+        // Arrange
+        Long invalidRaffleId = 99L;
+
+        when(raffleRepository.findById(invalidRaffleId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            raffleService.getPublicRaffleDetails(invalidRaffleId);
+        });
+
+        verify(raffleRepository, times(1)).findById(invalidRaffleId);
+    }
+
+
 }
