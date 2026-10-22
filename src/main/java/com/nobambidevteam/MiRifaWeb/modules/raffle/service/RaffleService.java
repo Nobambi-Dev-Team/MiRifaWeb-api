@@ -123,5 +123,15 @@ public class RaffleService implements IRaffleService {
         }
         double percentage = ((double) paidCount / totalNumbers) * 100.0;
         return Math.round(percentage * 100.0) / 100.0;
+      
+      
+    @Transactional(readOnly = true)
+    @Override
+    public RaffleResponseDto getPublicRaffleDetails(Long raffleId) {
+
+        Raffle raffle = raffleRepository.findById(raffleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rifa no encontrada con el ID: " + raffleId));
+
+        return RaffleMapper.toResponseDTO(raffle);
     }
 }

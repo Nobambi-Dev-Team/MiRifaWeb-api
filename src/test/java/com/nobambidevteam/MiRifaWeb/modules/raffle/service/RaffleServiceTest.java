@@ -65,10 +65,8 @@ public class RaffleServiceTest {
 
     @Test
     void shouldCreateRaffleSuccessfully() {
-        // Arrange
         Long userId = 1L;
 
-        // Simulamos lo que devolvería la base de datos al guardar
         Raffle savedRaffle = new Raffle();
         savedRaffle.setRaffleId(100L);
         savedRaffle.setUserId(userId);
@@ -77,10 +75,8 @@ public class RaffleServiceTest {
 
         when(raffleRepository.save(any(Raffle.class))).thenReturn(savedRaffle);
 
-        // Act
         RaffleResponseDto response = raffleService.createRaffle(requestDTO, userId);
 
-        // Assert
         assertNotNull(response);
         assertEquals(100L, response.getId());
         assertEquals("Sorteo Test", response.getTitle());
@@ -91,62 +87,50 @@ public class RaffleServiceTest {
 
     @Test
     void shouldReturnNumbersStatusSuccessfully() {
-        // Arrange
         Long raffleId = 1L;
 
-        // Simulamos la rifa que se encuentra en la base de datos
         Raffle mockRaffle = new Raffle();
         mockRaffle.setRaffleId(raffleId);
-        mockRaffle.setNumberCount(100); // total_capacity
+        mockRaffle.setNumberCount(100);
 
-        // Simulamos la lista de números ocupados
         List<OccupiedNumberDto> mockOccupiedNumbers = List.of(
                 new OccupiedNumberDto(7, ReservationStatus.RESERVED),
                 new OccupiedNumberDto(10, ReservationStatus.RESERVED)
         );
 
-        // Configuramos los mocks
         when(raffleRepository.findById(raffleId)).thenReturn(Optional.of(mockRaffle));
         when(reservationRepository.findOccupiedNumbersByRaffleId(raffleId)).thenReturn(mockOccupiedNumbers);
 
-        // Act
         RaffleNumbersStatusResponseDto response = raffleService.getNumbersStatus(raffleId);
 
-        // Assert
         assertNotNull(response);
         assertEquals(100, response.getTotalCapacity());
         assertEquals(2, response.getOccupiedNumbers().size());
         assertEquals(7, response.getOccupiedNumbers().get(0).getNumber());
         assertEquals(ReservationStatus.RESERVED, response.getOccupiedNumbers().get(0).getStatus());
 
-        // Verificamos que los repositorios fueron llamados exactamente una vez
         verify(raffleRepository, times(1)).findById(raffleId);
         verify(reservationRepository, times(1)).findOccupiedNumbersByRaffleId(raffleId);
     }
 
     @Test
     void shouldThrowExceptionWhenRaffleNotFoundOnNumbersStatus() {
-        // Arrange
         Long invalidRaffleId = 99L;
 
-        // Simulamos que el repositorio no encuentra nada
         when(raffleRepository.findById(invalidRaffleId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> {
             raffleService.getNumbersStatus(invalidRaffleId);
         });
 
-        // Verificamos que si falla la búsqueda de la rifa, NO se hace la consulta de reservas (optimización)
         verify(raffleRepository, times(1)).findById(invalidRaffleId);
         verify(reservationRepository, never()).findOccupiedNumbersByRaffleId(anyLong());
     }
 
-    //--------------------------- Obtener riffa con metricas por Id (organizador)
+    //--------------------------- Tests from feat-get-raffle branch
+
     @Test
     void shouldReturnRaffleAndMetricsSuccessfully() {
-
-        // Arrange
         Long validRaffleId = 1L;
         Long validUserId = 1L;
 
@@ -174,40 +158,27 @@ public class RaffleServiceTest {
         when(raffleRepository.findById(validRaffleId)).thenReturn(Optional.of(raffle));
         when(reservationRepository.findAllByRaffleId(validRaffleId)).thenReturn(reservations);
 
-        // Act
         RaffleMetricsDto response = raffleService.getRaffleMetricsById(validRaffleId, validUserId);
 
-        // Asserts
         assertNotNull(response);
         assertNotNull(response.raffle());
         assertEquals(validRaffleId, response.raffle().getId());
         assertEquals("Viaje de egresados 6to", response.raffle().getTitle());
+        assertEquals(3, response.reservedNumbersCount());
+        assertEquals(4.0, response.completionPercentage());
+        assertEquals(0, new BigDecimal("6000").compareTo(response.totalAmountRaised()));
 
-        // Verificamos las métricas matemáticas
-        // total de números ocupados
-        assertEquals(3, response.reservedNumbersCount(), "Debe contar todas las reservas existentes");
-
-        // porcentaje completado
-        assertEquals(4.0, response.completionPercentage(), "Debe calcular el porcentaje solo con reservas pagadas");
-
-        // monto recaudado: 2 reservas pagadas * $3000 = $6000
-        assertEquals(0, new BigDecimal("6000").compareTo(response.totalAmountRaised()), "Debe sumar el dinero solo de reservas pagadas");
-
-        // Verificamos el comportamiento de las dependencias
         verify(raffleRepository, times(1)).findById(validRaffleId);
         verify(reservationRepository, times(1)).findAllByRaffleId(validRaffleId);
     }
 
     @Test
     void shouldThrowExceptionWhenRaffleNotFoundForMetrics() {
-
-        // Arrange
         Long invalidRaffleId = 999L;
         Long validUserId = 1L;
 
         when(raffleRepository.findById(invalidRaffleId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> {
             raffleService.getRaffleMetricsById(invalidRaffleId, validUserId);
         });
@@ -218,8 +189,6 @@ public class RaffleServiceTest {
 
     @Test
     void shouldThrowExceptionWhenUserIsNotTheOwnerOfRaffle() {
-
-        // Arrange
         Long validRaffleId = 1L;
         Long ownerUserId = 1L;
         Long nonOwnerUserId = 2L;
@@ -231,7 +200,6 @@ public class RaffleServiceTest {
 
         when(raffleRepository.findById(validRaffleId)).thenReturn(Optional.of(raffle));
 
-        // Act & Assert
         assertThrows(BusinessRuleException.class, () -> {
             raffleService.getRaffleMetricsById(validRaffleId, nonOwnerUserId);
         });
@@ -240,4 +208,42 @@ public class RaffleServiceTest {
         verify(reservationRepository, never()).findAllByRaffleId(anyLong());
     }
 
+    //--------------------------- Tests from develop-branch
+
+    @Test
+    void shouldReturnPublicRaffleDetailsSuccessfully() {
+        Long raffleId = 1L;
+
+        Raffle mockRaffle = new Raffle();
+        mockRaffle.setRaffleId(raffleId);
+        mockRaffle.setTitle("Sorteo de fin de año");
+        mockRaffle.setDescription("Recaudación para el viaje de estudios");
+        mockRaffle.setNumberCount(100);
+        mockRaffle.setUnitPrice(new BigDecimal("1500.50"));
+        mockRaffle.setCategory(RaffleCategory.TRAVEL);
+
+        when(raffleRepository.findById(raffleId)).thenReturn(Optional.of(mockRaffle));
+
+        RaffleResponseDto response = raffleService.getPublicRaffleDetails(raffleId);
+
+        assertNotNull(response);
+        assertEquals(raffleId, response.getId());
+        assertEquals("Sorteo de fin de año", response.getTitle());
+        assertEquals(100, response.getNumberCount());
+
+        verify(raffleRepository, times(1)).findById(raffleId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRaffleNotFoundOnPublicDetails() {
+        Long invalidRaffleId = 99L;
+
+        when(raffleRepository.findById(invalidRaffleId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            raffleService.getPublicRaffleDetails(invalidRaffleId);
+        });
+
+        verify(raffleRepository, times(1)).findById(invalidRaffleId);
+    }
 }

@@ -13,4 +13,6 @@ public interface IRaffleService {
     RaffleNumbersStatusResponseDto getNumbersStatus(Long raffleId);
 
     RaffleMetricsDto getRaffleMetricsById(Long raffleId, Long userId);
+  
+    RaffleResponseDto getPublicRaffleDetails(Long raffleId);
 }
