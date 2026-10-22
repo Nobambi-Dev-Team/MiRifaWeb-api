@@ -1,5 +1,7 @@
 package com.nobambidevteam.MiRifaWeb.modules.raffle.controller;
 
+import com.nobambidevteam.MiRifaWeb.modules.raffle.model.dto.raffle.RaffleResponseDto;
+import com.nobambidevteam.MiRifaWeb.modules.raffle.service.interfaces.IRaffleService;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.model.dto.ReservationRequestDto;
 import com.nobambidevteam.MiRifaWeb.modules.reservation.service.ReservationService;
 import jakarta.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class PublicRaffleController {
 
     private final ReservationService reservationService;
+    private final IRaffleService raffleService;
 
     @PostMapping("/{raffle_id}/reservations")
     public ResponseEntity<Void> createReservation(
@@ -22,5 +25,14 @@ public class PublicRaffleController {
 
         reservationService.createReservation(raffleId, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/{raffle_id}")
+    public ResponseEntity<RaffleResponseDto> getPublicRaffle(
+            @PathVariable("raffle_id") Long raffleId) {
+
+        RaffleResponseDto response = raffleService.getPublicRaffleDetails(raffleId);
+
+        return ResponseEntity.ok(response);
     }
 }

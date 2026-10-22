@@ -39,6 +39,7 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .anyRequest().authenticated()
