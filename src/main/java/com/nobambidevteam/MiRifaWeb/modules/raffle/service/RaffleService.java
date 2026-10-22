@@ -123,7 +123,7 @@ public class RaffleService implements IRaffleService {
         }
         double percentage = ((double) paidCount / totalNumbers) * 100.0;
         return Math.round(percentage * 100.0) / 100.0;
-      
+    }
       
     @Transactional(readOnly = true)
     @Override
