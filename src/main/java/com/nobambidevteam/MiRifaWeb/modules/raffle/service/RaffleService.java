@@ -49,4 +49,14 @@ public class RaffleService implements IRaffleService {
                 .occupiedNumbers(occupiedNumbers)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public RaffleResponseDto getPublicRaffleDetails(Long raffleId) {
+
+        Raffle raffle = raffleRepository.findById(raffleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rifa no encontrada con el ID: " + raffleId));
+
+        return RaffleMapper.toResponseDTO(raffle);
+    }
 }

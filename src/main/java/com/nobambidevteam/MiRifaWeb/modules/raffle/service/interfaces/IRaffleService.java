@@ -10,4 +10,6 @@ public interface IRaffleService {
     RaffleResponseDto createRaffle(RaffleRequestDto requestDto, Long userId);
 
     RaffleNumbersStatusResponseDto getNumbersStatus(Long raffleId);
+
+    RaffleResponseDto getPublicRaffleDetails(Long raffleId);
 }
